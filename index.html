@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="description" content="PhotoMind 本地照片整理与搜索">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>PhotoMind · 智能照片管家</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#111c2e;--panel2:#18263b;--line:#263850;--text:#edf4ff;--muted:#9aabc2;--blue:#58a6ff;--cyan:#55d6d0;--danger:#ff6b7a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#132744 0%,var(--bg) 48%);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+header{padding:calc(18px + env(safe-area-inset-top)) 16px 14px;max-width:1100px;margin:auto}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{display:flex;align-items:center;gap:10px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#2376db,#35c9c1);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 25px #1e78bd55}
+h1{font-size:21px;margin:0;letter-spacing:.2px}.sub{font-size:12px;color:var(--muted)}.local{font-size:11px;color:#8ef0c5;border:1px solid #276c5a;padding:5px 9px;border-radius:30px;background:#12352d}
+main{max-width:1100px;margin:auto;padding:0 14px 50px}.hero{padding:17px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(130deg,#142a46,#101b2d);margin-bottom:14px}.hero h2{margin:0 0 5px;font-size:20px}.hero p{margin:0;color:var(--muted);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}.stat{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:12px}.stat b{font-size:22px;display:block}.stat span{font-size:11px;color:var(--muted)}
+.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:12px 13px;font-weight:650;font-size:13px;cursor:pointer}.btn.primary{background:linear-gradient(120deg,#2878d8,#1d9fa6);border:0;color:white}.btn.danger{color:#ff9ca6;border-color:#74414a}.btn:active{transform:scale(.98)}input,select,textarea{width:100%;background:#0d1727;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit;outline:none}input:focus,select:focus,textarea:focus{border-color:var(--blue)}.search{position:relative;margin:12px 0}.search input{padding-left:42px}.search:before{content:"⌕";position:absolute;left:14px;top:5px;font-size:28px;color:var(--muted)}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px}.sectionhead h3{margin:0;font-size:16px}.sectionhead span{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;overflow:hidden;min-width:0}.thumb{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:#1b2b40}.cardbody{padding:10px}.filename{font-size:12px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.meta{font-size:10px;color:var(--muted);margin:4px 0 8px}.tags{font-size:11px;color:#8ddbd8;min-height:16px;overflow-wrap:anywhere}.cardactions{display:flex;gap:6px;margin-top:8px}.smallbtn{flex:1;padding:8px 5px;border-radius:9px;border:1px solid var(--line);background:#17263a;color:var(--text);font-size:11px}.empty{border:1px dashed #39516e;border-radius:16px;padding:30px 16px;text-align:center;color:var(--muted);grid-column:1/-1}.empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:5px}
+.note{font-size:12px;color:var(--muted);padding:12px;border-radius:12px;background:#101c2d;border:1px solid var(--line);margin-top:18px}
+dialog{width:min(92vw,480px);border:1px solid var(--line);border-radius:18px;background:#111c2e;color:var(--text);padding:18px;box-shadow:0 20px 80px #0009}dialog::backdrop{background:#020712bb}dialog h3{margin:0 0 12px}dialog label{display:block;font-size:12px;color:var(--muted);margin:11px 0 5px}.dialogactions{display:flex;gap:8px;margin-top:16px}.dialogactions button{flex:1}
+footer{text-align:center;color:#70839c;font-size:11px;padding:24px 10px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.toolbar{grid-template-columns:repeat(4,1fr)}.filters{grid-template-columns:2fr 1fr 1fr}.hero{padding:24px}.stats{max-width:480px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand"><div class="logo">▧</div><div><h1>PhotoMind</h1><div class="sub">你的私人照片搜索引擎 · v1.0</div></div></div><span class="local">● 本地模式</span></div></header>
+<main>
+<section class="hero"><h2>让每张照片，都能被快速找到。</h2><p>导入照片后，可按文件名、标签、备注、分类和日期搜索。照片数据保存在当前浏览器。</p></section>
+<section class="stats">
+ <div class="stat"><b id="totalCount">0</b><span>照片总数</span></div>
+ <div class="stat"><b id="favCount">0</b><span>我的收藏</span></div>
+ <div class="stat"><b id="catCount">0</b><span>已使用分类</span></div>
+</section>
+<div class="toolbar">
+ <button class="btn primary" id="importBtn">＋ 导入照片</button>
+ <button class="btn" id="backupBtn">⇩ 导出备份</button>
+ <button class="btn" id="restoreBtn">⇧ 恢复备份</button>
+ <button class="btn" id="clearFilterBtn">清除筛选</button>
+</div>
+<input id="photoInput" type="file" accept="image/*" multiple hidden>
+<input id="backupInput" type="file" accept="application/json,.json" hidden>
+<div class="search"><input id="searchInput" placeholder="搜索文件名、标签、备注……" autocomplete="off"></div>
+<div class="filters">
+ <select id="categoryFilter"><option value="">全部分类</option><option>机械设计</option><option>软件截图</option><option>旅行</option><option>菜单美食</option><option>汽车交通</option><option>人物</option><option>生活</option><option>其他</option></select>
+ <select id="sortFilter"><option value="new">最新导入</option><option value="old">最早导入</option><option value="name">文件名 A-Z</option></select>
+ <input id="dateFilter" type="date" aria-label="按日期筛选">
+</div>
+<div class="sectionhead"><h3>我的照片</h3><span id="resultCount">0 张</span></div>
+<section class="grid" id="photoGrid"><div class="empty"><strong>还没有照片</strong>点击“导入照片”，从手机相册选择图片开始整理。</div></section>
+<div class="note">🔒 隐私提示：本版本不会主动上传照片。照片副本保存在 Chrome 本地数据库中。请勿清除网站数据；建议定期导出备份。卸载浏览器或清理浏览数据可能造成数据丢失。</div>
+</main>
+<footer>PhotoMind v1.0 · Local-first photo organizer</footer>
+
+<dialog id="editDialog">
+ <h3>整理这张照片</h3>
+ <div id="editPreview"></div>
+ <label for="editCategory">照片分类</label>
+ <select id="editCategory"><option>其他</option><option>机械设计</option><option>软件截图</option><option>旅行</option><option>菜单美食</option><option>汽车交通</option><option>人物</option><option>生活</option></select>
+ <label for="editTags">标签（用逗号分隔）</label><input id="editTags" placeholder="例如：丝杠, M8, SolidWorks">
+ <label for="editNote">备注</label><textarea id="editNote" rows="3" placeholder="写下这张照片的内容或用途"></textarea>
+ <div class="dialogactions"><button class="btn" id="cancelEdit">取消</button><button class="btn primary" id="saveEdit">保存</button></div>
+</dialog>
+<script>
+const DB_NAME='PhotoMindDB', STORE='photos', DB_VERSION=1;
+let db, records=[], editingId=null, objectUrls=[];
+const $=id=>document.getElementById(id);
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id'});s.createIndex('addedAt','addedAt');}};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
+function tx(mode='readonly'){return db.transaction(STORE,mode).objectStore(STORE);}
+function allRecords(){return new Promise((resolve,reject)=>{const r=tx().getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+function putRecord(item){return new Promise((resolve,reject)=>{const r=tx('readwrite').put(item);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);});}
+function deleteRecord(id){return new Promise((resolve,reject)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);});}
+function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(16).slice(2);}
+function escapeHTML(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function niceDate(t){return new Date(t).toLocaleDateString('zh-CN');}
+async function refresh(){records=await allRecords();render();}
+function render(){
+ objectUrls.forEach(URL.revokeObjectURL);objectUrls=[];
+ const fav=records.filter(x=>x.favorite).length,cats=new Set(records.map(x=>x.category).filter(Boolean));
+ $('totalCount').textContent=records.length;$('favCount').textContent=fav;$('catCount').textContent=cats.size;
+ const q=$('searchInput').value.trim().toLowerCase(),cat=$('categoryFilter').value,date=$('dateFilter').value,sort=$('sortFilter').value;
+ let list=records.filter(x=>{
+  const hay=[x.name,x.category,x.tags,x.note].join(' ').toLowerCase();
+  const day=new Date(x.takenAt||x.addedAt).toISOString().slice(0,10);
+  return (!q||hay.includes(q))&&(!cat||x.category===cat)&&(!date||day===date);
+ });
+ list.sort((a,b)=>sort==='old'?a.addedAt-b.addedAt:sort==='name'?a.name.localeCompare(b.name,'zh'):b.addedAt-a.addedAt);
+ $('resultCount').textContent=list.length+' 张';const grid=$('photoGrid');
+ if(!list.length){grid.innerHTML='<div class="empty"><strong>没有找到匹配照片</strong>试试其他关键词，或清除筛选条件。</div>';return;}
+ grid.innerHTML=list.map(x=>{
+  const url=URL.createObjectURL(x.blob);objectUrls.push(url);
+  return `<article class="card"><img class="thumb" src="${url}" alt=""><div class="cardbody"><div class="filename" title="${escapeHTML(x.name)}">${escapeHTML(x.name)}</div><div class="meta">${escapeHTML(x.category||'未分类')} · ${niceDate(x.takenAt||x.addedAt)}</div><div class="tags">${escapeHTML(x.tags||'添加标签')}</div><div class="cardactions"><button class="smallbtn" data-edit="${x.id}">整理</button><button class="smallbtn" data-fav="${x.id}">${x.favorite?'★ 已收藏':'☆ 收藏'}</button></div><div class="cardactions"><button class="smallbtn" data-open="${x.id}">查看原图</button><button class="smallbtn" data-delete="${x.id}">删除副本</button></div></div></article>`;
+ }).join('');
+}
+$('photoGrid').addEventListener('click',async e=>{
+ const b=e.target.closest('button');if(!b)return;const id=b.dataset.edit||b.dataset.fav||b.dataset.delete||b.dataset.open;if(!id)return;
+ const item=records.find(x=>x.id===id);if(!item)return;
+ if(b.dataset.edit){editingId=id;$('editCategory').value=item.category||'其他';$('editTags').value=item.tags||'';$('editNote').value=item.note||'';const u=URL.createObjectURL(item.blob);$('editPreview').innerHTML=`<img src="${u}" style="width:100%;max-height:180px;object-fit:contain;border-radius:10px">`;$('editDialog').showModal();}
+ if(b.dataset.fav){item.favorite=!item.favorite;await putRecord(item);await refresh();}
+ if(b.dataset.delete){if(confirm('只删除 PhotoMind 中保存的照片副本，不会删除手机相册原图。确定删除？')){await deleteRecord(id);await refresh();}}
+ if(b.dataset.open){const u=URL.createObjectURL(item.blob);const w=window.open();if(w){w.document.write(`<title>${escapeHTML(item.name)}</title><img src="${u}" style="max-width:100%;height:auto">`);w.document.close();}else{alert('浏览器阻止了新窗口，请允许弹出窗口后重试。');URL.revokeObjectURL(u);}}
+});
+$('importBtn').onclick=()=>$('photoInput').click();
+$('photoInput').onchange=async e=>{
+ const files=[...e.target.files].filter(f=>f.type.startsWith('image/'));if(!files.length)return;
+ $('importBtn').textContent='正在导入…';
+ let done=0;
+ for(const f of files){try{await putRecord({id:uid(),name:f.name,blob:f,category:'其他',tags:'',note:'',favorite:false,addedAt:Date.now(),takenAt:f.lastModified||Date.now(),type:f.type,size:f.size});done++;}catch(err){console.error(err);}}
+ $('importBtn').textContent='＋ 导入照片';e.target.value='';await refresh();alert(`导入完成：${done} 张照片。`);
+};
+['searchInput','categoryFilter','sortFilter','dateFilter'].forEach(id=>$(id).addEventListener(id==='searchInput'?'input':'change',render));
+$('clearFilterBtn').onclick=()=>{$('searchInput').value='';$('categoryFilter').value='';$('sortFilter').value='new';$('dateFilter').value='';render();};
+$('cancelEdit').onclick=()=>{$('editDialog').close();};
+$('saveEdit').onclick=async()=>{const item=records.find(x=>x.id===editingId);if(!item)return;item.category=$('editCategory').value;item.tags=$('editTags').value.trim();item.note=$('editNote').value.trim();await putRecord(item);$('editDialog').close();await refresh();};
+$('backupBtn').onclick=async()=>{
+ if(!records.length){alert('当前没有照片可备份。');return;}
+ if(!confirm(`将导出 ${records.length} 张照片及其标签、备注。文件可能很大，请确保手机有足够空间。继续吗？`))return;
+ const data=[];for(const r of records){data.push({...r,blobData:await blobToDataURL(r.blob),blob:undefined});}
+ const blob=new Blob([JSON.stringify({app:'PhotoMind',version:1,exportedAt:new Date().toISOString(),photos:data})],{type:'application/json'});
+ download(blob,'PhotoMind-backup-'+new Date().toISOString().slice(0,10)+'.json');
+};
+function blobToDataURL(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(r.error);r.readAsDataURL(blob);});}
+function dataURLToBlob(url){const [head,data]=url.split(',');const mime=(head.match(/:(.*?);/)||[])[1]||'image/jpeg';const bin=atob(data);const arr=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime});}
+function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);}
+$('restoreBtn').onclick=()=>$('backupInput').click();
+$('backupInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(data.app!=='PhotoMind'||!Array.isArray(data.photos))throw Error('文件格式不正确');if(!confirm(`发现 ${data.photos.length} 张备份照片。恢复会合并到当前照片库，继续吗？`))return;let n=0;for(const p of data.photos){if(!p.blobData)continue;const {blobData,...rest}=p;await putRecord({...rest,blob:dataURLToBlob(blobData),id:p.id||uid()});n++;}await refresh();alert(`恢复完成：${n} 张。`);}catch(err){alert('恢复失败：'+err.message);}e.target.value='';};
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));}
+(async()=>{try{db=await openDB();await refresh();}catch(e){console.error(e);alert('本地数据库无法启动。请使用最新版 Chrome，并通过 HTTPS 网站地址打开本 App。');}})();
+</script>
+</body></html>
